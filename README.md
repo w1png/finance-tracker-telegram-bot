@@ -6,6 +6,11 @@ As of 01.10.2022 the bot is running at @FamilyFinanceTrackerbot
 
     python3 -m pip install -r requirements.txt
 
+## Make a token.txt file containing your token
+On linux you can run:
+
+    echo "token" >> token.txt
+
 ## Run the bot 
 
     python3 main.py
