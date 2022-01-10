@@ -59,10 +59,10 @@ async def msg(message: types.Message):
         )
     elif message.text == tt.create_family:
         if not user.is_in_family():
-            family_id = fam.create_family(user.get_user_id())
+            fam.create_family(user.get_user_id())
             await bot.send_message(
                 chat_id=user.get_user_id(),
-                text=f"Семья с ID {family_id} была создана.",
+                text=f"Семья с ID {user.get_family().get_family_id()} была создана.",
                 reply_markup=mk.get_markup_start(user)
             )
     elif message.text == tt.leave_family:
