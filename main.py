@@ -34,7 +34,7 @@ conn.commit()
 
 
 with open("token.txt", "r") as token_file:
-    token = token_file.readlines()[0]
+    token = token_file.readline().rstrip()
 
 storage = MemoryStorage()
 bot = Bot(token=token)
