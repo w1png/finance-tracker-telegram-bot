@@ -138,7 +138,6 @@ async def msg(message: types.Message):
 async def process_callback(callback_query: types.CallbackQuery):
     user = usr.User(callback_query.message.chat.id)
     call_data = callback_query.data
-    print(call_data)
 
     if call_data.startswith("acceptFamily"):
         family = fam.Family(call_data[12:])
@@ -214,7 +213,6 @@ async def inviteToFamilySetInvitedID(message: types.Message, state: FSMContext):
 async def cancelState(callback_query: types.CallbackQuery, state: FSMContext):
     user = usr.User(callback_query.message.chat.id)
     call_data = callback_query.data
-    print("STATE", call_data)
     
     if call_data == "cancelDelete":
         try:
