@@ -62,7 +62,7 @@ class Family:
             c.execute("SELECT * FROM bills WHERE family_id=? AND user_id=?", [self.get_family_id(), user_id])
         else:
             c.execute("SELECT * FROM bills WHERE family_id=?", [self.get_family_id()])
-        return list(map(Bill, [bill[0] for bill in list(c)]))
+        return list(map(Bill, [bill[0] for bill in list(c)]))[::-1]
 
     def get_bills_30_days(self, user_id=None):
         approved_bill_list = list()
