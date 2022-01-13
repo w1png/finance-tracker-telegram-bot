@@ -11,6 +11,7 @@
 # family -> family_id | user_list | creator_id 
 # bills -> bill_id | family_id | user_id | price | message 
 
+from datetime import datetime
 import sqlite3
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
@@ -111,7 +112,7 @@ async def msg(message: types.Message):
                 bill_list = user.get_family().get_bills_30_days(user.get_user_id())
 
             for bill in bill_list:
-                text += f"{'{:.2f}'.format(bill.get_price())} руб. - \"{bill.get_message()}\"\nID пользователя: {bill.get_user_id()}\n{tt.line_separator}\n"
+                text += f"{'{:.2f}'.format(bill.get_price())} руб. - \"{bill.get_message()}\"\nДобавлен пользователем {message.chat.full_name} в {datetime.strftime(bill.get_date(), '%Y-%m-%d в %H:%M:%S')}\n{tt.line_separator}\n"
             text += f"{tt.family_bills_last_30_days if message.text == tt.family_bills_last_30_days else tt.my_bills_last_30_days}: {'{:.2f}'.format(user.get_family().get_total_30_days(None if message.text == tt.family_bills_last_30_days else user.get_user_id()))}руб."
             await bot.send_message(
                 chat_id=user.get_user_id(),
@@ -149,6 +150,19 @@ async def process_callback(callback_query: types.CallbackQuery):
                 text=f"Вы вступили в семью с ID {user.get_family().get_family_id()}.",
                 reply_markup=mk.get_markup_start(user)
             )
+    elif call_data == "myInvites":
+        if not user.is_in_family():
+            if user.get_invites():
+                text = tt.my_invites
+                markup = mk.get_markup_myInvites(user)
+            else:
+                text = tt.no_active_invites
+                markup = types.InlineKeyboardMarkup()
+            await bot.send_message(
+                chat_id=user.get_user_id(),
+                text=text,
+                reply_markup=markup
+            )
     elif call_data.startswith("declineFamily"):
         family = fam.Family(call_data[13:])
         if not user.is_in_family() and user.is_invited(family.get_family_id()):
@@ -172,6 +186,10 @@ async def process_callback(callback_query: types.CallbackQuery):
             text = "Вы не можете выгнать самого себя!"
         elif user.is_in_family() and kicked_user.is_in_family():
             if kicked_user.get_family().get_creator().get_user_id() == user.get_user_id() and kicked_user.get_family().get_family_id() == user.get_family().get_family_id():
+                    await bot.send_message(
+                        chat_id=kicked_user.get_user_id(),
+                        text=f"Вы были выгнаны из семьи с ID {family.get_family_id()}.",
+                    )
                     text = f"Пользователь с Id {kicked_user.get_user_id()} был выгнан из семьи."
                     family.remove_user(kicked_user.get_user_id())
         await bot.delete_message(
@@ -197,6 +215,11 @@ async def inviteToFamilySetInvitedID(message: types.Message, state: FSMContext):
         else:
             try:
                 invited_user.create_invite(user.get_family().get_family_id())
+                await bot.send_message(
+                    chat_id=invited_user.get_user_id(),
+                    text=f"Вы были приглашены в семью с ID {user.get_family().get_family_id}.",
+                    reply_markup=mk.single_button(mk.btnBackMyInvites)
+                )
                 text = f"Пользователь с ID {invited_user.get_user_id()} был приглашен в семью с ID {user.get_family().get_family_id()}."
             except:
                 text = tt.error
