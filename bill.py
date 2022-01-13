@@ -44,6 +44,9 @@ class Bill:
     def get_message(self):
         return self.__clist()[4]
     
+    def get_date_string(self):
+        return self.__clist()[5]
+
     def get_date(self):
         return datetime.now().strptime(self.__clist()[5], "%Y-%m-%d %H:%M:%S")
         
