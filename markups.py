@@ -2,6 +2,9 @@ from aiogram import types
 import text_templates as tt
 
 btnCancelDelete = types.InlineKeyboardButton(text=tt.back, callback_data="cancelDelete")
+btnBackMyInvites = types.InlineKeyboardButton(text=tt.back, callback_data="myInvites")
+btnMyInvites = types.InlineKeyboardButton(text=tt.my_invites, callback_data="myInvites")
+btnBackKickFromFamily = types.InlineKeyboardButton(text=tt.back, callback_data="kickFromFamily")
 
 def single_button(button):
     markup = types.InlineKeyboardMarkup()

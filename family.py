@@ -26,7 +26,7 @@ class Family:
     def __init__(self, family_id):
         self.__family_id = family_id
 
-    def delete_family(self):
+    def delete(self):
         for user in self.get_user_list():
             self.remove_user(user.get_user_id())
         c.execute("DELETE FROM bills WHERE family_id=?", [self.get_family_id()])
