@@ -8,8 +8,8 @@ def user_exists(user_id):
     c.execute("SELECT * FROM users WHERE user_id=?", [user_id])
     return len(list(c)) == 1
 
-def create_user(user_id):
-    c.execute("INSERT INTO users VALUES (?, ?)", [user_id, None])
+def create_user(user_id, username):
+    c.execute("INSERT INTO users VALUES (?, ?, ?)", [user_id, None, username])
     conn.commit()
 
 class User:
@@ -25,6 +25,14 @@ class User:
     def __clist(self):
         c.execute("SELECT * FROM users WHERE user_id=?", [self.get_user_id()])
         return list(c)[0]
+
+    def get_name(self):
+        name = self.__clist()[2]
+        return name if name else self.get_user_id()
+
+    def set_name(self, value):
+        c.execute("UPDATE users SET name=? WHERE user_id=?", [value, self.get_user_id()])
+        conn.commit()
 
     def is_in_family(self):
         return bool(self.__clist()[1])

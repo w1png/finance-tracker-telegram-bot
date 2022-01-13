@@ -27,7 +27,7 @@ import state_handler as sh
 
 conn = sqlite3.connect("data.db")
 c = conn.cursor()
-c.execute("CREATE TABLE IF NOT EXISTS users (user_id INTEGER, family_id INTEGEr)")
+c.execute("CREATE TABLE IF NOT EXISTS users (user_id INTEGER, family_id INTEGER, username TEXT)")
 c.execute("CREATE TABLE IF NOT EXISTS families (family_id INTEGER, creator_id INTEGER)")
 c.execute("CREATE TABLE IF NOT EXISTS invites (user_id INTEGER, family_id INTEGER)")
 c.execute("CREATE TABLE IF NOT EXISTS bills (bill_id INTEGER, family_id INTEGER, user_id INGEGER, price REAL, message TEXT, date TEXT)")
@@ -58,6 +58,13 @@ async def msg(message: types.Message):
             chat_id=user.get_user_id(),
             text=user.get_user_id(),
         )
+    elif message.text == tt.change_my_name:
+        await bot.send_message(
+            chat_id=user.get_user_id(),
+            text=f"Введите новое имя или нажмите на кнопку \"{tt.back}\"",
+            reply_markup=mk.single_button(mk.btnCancelDelete)
+        )
+        await sh.changeName.name.set()
     elif message.text == tt.create_family:
         if not user.is_in_family():
             fam.create_family(user.get_user_id())
@@ -112,7 +119,7 @@ async def msg(message: types.Message):
                 bill_list = user.get_family().get_bills_30_days(user.get_user_id())
 
             for bill in bill_list:
-                text += f"{'{:.2f}'.format(bill.get_price())} руб. - \"{bill.get_message()}\"\nДобавлен пользователем {message.chat.full_name} в {datetime.strftime(bill.get_date(), '%Y-%m-%d в %H:%M:%S')}\n{tt.line_separator}\n"
+                text += f"{'{:.2f}'.format(bill.get_price())} руб. - \"{bill.get_message()}\"\nДобавлен пользователем {bill.get_user().get_name()} в {datetime.strftime(bill.get_date(), '%Y-%m-%d в %H:%M:%S')}\n{tt.line_separator}\n"
             text += f"{tt.family_bills_last_30_days if message.text == tt.family_bills_last_30_days else tt.my_bills_last_30_days}: {'{:.2f}'.format(user.get_family().get_total_30_days(None if message.text == tt.family_bills_last_30_days else user.get_user_id()))}руб."
             await bot.send_message(
                 chat_id=user.get_user_id(),
@@ -211,7 +218,7 @@ async def process_callback(callback_query: types.CallbackQuery):
                         chat_id=kicked_user.get_user_id(),
                         text=f"Вы были выгнаны из семьи с ID {family.get_family_id()}.",
                     )
-                    text = f"Пользователь с Id {kicked_user.get_user_id()} был выгнан из семьи."
+                    text = f"Пользователь {kicked_user.get_name()} был выгнан из семьи."
                     family.remove_user(kicked_user.get_user_id())
         await bot.edit_message_text(
             chat_id=user.get_user_id(),
@@ -228,9 +235,9 @@ async def inviteToFamilySetInvitedID(message: types.Message, state: FSMContext):
     if usr.user_exists(message.text):
         invited_user = usr.User(message.text)
         if invited_user.is_in_family():
-            text = f"Пользователь с ID {invited_user.get_user_id()} уже находится в семье."
+            text = f"Пользователь {invited_user.get_name()} уже находится в семье."
         elif invited_user.is_invited(family.get_family_id()):
-            text = f"Пользователь с ID {invited_user.get_user_id()} уже был приглашен в семью с ID {family.get_family_id()}."
+            text = f"Пользователь {invited_user.get_name()} уже был приглашен в семью с ID {family.get_family_id()}."
         else:
             try:
                 invited_user.create_invite(user.get_family().get_family_id())
@@ -239,7 +246,7 @@ async def inviteToFamilySetInvitedID(message: types.Message, state: FSMContext):
                     text=f"Вы были приглашены в семью с ID {user.get_family().get_family_id()}.",
                     reply_markup=mk.single_button(mk.btnMyInvites)
                 )
-                text = f"Пользователь с ID {invited_user.get_user_id()} был приглашен в семью с ID {user.get_family().get_family_id()}."
+                text = f"Пользователь {invited_user.get_name()} был приглашен в семью с ID {user.get_family().get_family_id()}."
             except:
                 text = tt.error
     else:
@@ -248,6 +255,17 @@ async def inviteToFamilySetInvitedID(message: types.Message, state: FSMContext):
     await bot.send_message(
         chat_id=user.get_user_id(),
         text=text
+    )
+    await state.finish()
+
+
+@dp.message_handler(state=sh.changeName.name)
+async def changeNameSetName(message: types.Message, state: FSMContext):
+    user = usr.User(message.chat.id)
+    user.set_name(message.text)
+    await bot.send_message(
+        chat_id=message.chat.id,
+        text=f"Ваше имя было изменено на \"{message.text}\".",
     )
     await state.finish()
 

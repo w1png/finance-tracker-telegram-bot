@@ -2,6 +2,7 @@ line_separator = "➖➖➖➖➖➖➖➖➖➖"
 
 greeting = "Приветствие"
 get_my_id = "Получить мой ID"
+change_my_name = "Изменить имя"
 invite_to_family = "Пригласить в семью"
 kick_from_family = "Выгнать из семьи"
 leave_family = "Выйти из семьи"

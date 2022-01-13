@@ -22,6 +22,7 @@ def get_markup_start(user):
     else:
         markup.add(types.KeyboardButton(text=tt.create_family), types.KeyboardButton(text=tt.my_invites))
         markup.add(types.KeyboardButton(text=tt.get_my_id))
+    markup.add(types.KeyboardButton(text=tt.change_my_name))
     return markup
 
 
@@ -35,5 +36,5 @@ def get_markup_myInvites(user):
 def get_markup_kickFromFamily(family):
     markup = types.InlineKeyboardMarkup()
     for user in family.get_user_list():
-        markup.add(types.InlineKeyboardButton(text=str(user.get_user_id()), callback_data=f"kickFromFamily{user.get_user_id()}"))
+        markup.add(types.InlineKeyboardButton(text=user.get_name(), callback_data=f"kickFromFamily{user.get_user_id()}"))
     return markup

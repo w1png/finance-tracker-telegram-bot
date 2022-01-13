@@ -1,6 +1,7 @@
 import sqlite3
 from random import randint
 from datetime import datetime
+import user as usr
 
 conn = sqlite3.connect("data.db")
 c = conn.cursor()
@@ -35,8 +36,8 @@ class Bill:
     def get_family_id(self):
         return self.__clist()[1]
 
-    def get_user_id(self):
-        return self.__clist()[2]
+    def get_user(self):
+        return usr.User(self.__clist()[2])
     
     def get_price(self):
         return self.__clist()[3]

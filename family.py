@@ -59,7 +59,6 @@ class Family:
 
     def get_bills(self, user_id=None):
         if user_id:
-            user = usr.User(user_id)
             c.execute("SELECT * FROM bills WHERE family_id=? AND user_id=?", [self.get_family_id(), user_id])
         else:
             c.execute("SELECT * FROM bills WHERE family_id=?", [self.get_family_id()])
