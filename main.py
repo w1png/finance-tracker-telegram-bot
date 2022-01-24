@@ -128,7 +128,7 @@ async def msg(message: types.Message):
                 bill_list = bill_list[:30]
                 
             
-            for bill in bill_list:
+            for bill in bill_list[::-1]:
                 text += f"{'{:.2f}'.format(bill.get_price())} руб. - \"{bill.get_message()}\"\nДобавлено {bill.get_user().get_name()} в {datetime.strftime(bill.get_date(), '%y-%m в %H:%M')}\n{tt.line_separator}\n"
             text += f"{tt.family_bills_last_30_days if message.text == tt.family_bills_last_30_days else tt.my_bills_last_30_days}: {'{:.2f}'.format(user.get_family().get_total_30_days(None if message.text == tt.family_bills_last_30_days else user.get_user_id()))}руб."
             await bot.send_message(
@@ -255,7 +255,7 @@ async def process_callback(callback_query: types.CallbackQuery):
         bill_list = bill_list[bill_offset_start:bill_offset_start+30]
 
         text = ""
-        for bill in bill_list:
+        for bill in bill_list[::-1]:
             text += f"{'{:.2f}'.format(bill.get_price())} руб. - \"{bill.get_message()}\"\nДобавлено {bill.get_user().get_name()} в {datetime.strftime(bill.get_date(), '%y-%m в %H:%M')}\n{tt.line_separator}\n"
         text += f"{tt.family_bills_last_30_days if not own else tt.my_bills_last_30_days}: {'{:.2f}'.format(user.get_family().get_total_30_days(None if not own else user.get_user_id()))}руб."
         
