@@ -12,7 +12,9 @@
 # bills -> bill_id | family_id | user_id | price | message 
 
 from datetime import datetime
+from math import ceil
 import sqlite3
+from tokenize import String
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
@@ -115,23 +117,35 @@ async def msg(message: types.Message):
             text = f"{tt.line_separator}\n"
             if message.text == tt.family_bills_last_30_days:
                 bill_list = user.get_family().get_bills_30_days()
+                own = False
             else:
                 bill_list = user.get_family().get_bills_30_days(user.get_user_id())
+                own = True
 
+            markup = types.InlineKeyboardMarkup()
+            if len(bill_list) > 30:
+                markup = mk.get_markup_billsPage(pagenum=1, maxpages=ceil(len(bill_list) / 30), own=own)
+                bill_list = bill_list[:30]
+                
+            
             for bill in bill_list:
                 text += f"{'{:.2f}'.format(bill.get_price())} руб. - \"{bill.get_message()}\"\nДобавлено {bill.get_user().get_name()} в {datetime.strftime(bill.get_date(), '%y-%m в %H:%M')}\n{tt.line_separator}\n"
             text += f"{tt.family_bills_last_30_days if message.text == tt.family_bills_last_30_days else tt.my_bills_last_30_days}: {'{:.2f}'.format(user.get_family().get_total_30_days(None if message.text == tt.family_bills_last_30_days else user.get_user_id()))}руб."
             await bot.send_message(
                 chat_id=user.get_user_id(),
-                text=text
+                text=text,
+                reply_markup=markup
             )
     else:
         if user.is_in_family():
             try:
                 price = float(message.text.split(" - ")[0])
                 msg = message.text.split(" - ")[1]
-                b.create_bill(user.get_family().get_family_id(), user.get_user_id(), price, msg)
-                text = f"Счет на {price}руб. был добавлен с сообщением \"{msg}\"."
+                if len(msg) > 120:
+                    text = f"Сообщение не может быть больше 120 символов!"
+                else:
+                    b.create_bill(user.get_family().get_family_id(), user.get_user_id(), price, msg)
+                    text = f"Счет на {price}руб. был добавлен с сообщением \"{msg}\"."
             except:
                 text = tt.error
         else:
@@ -225,6 +239,31 @@ async def process_callback(callback_query: types.CallbackQuery):
             message_id=message_id,
             text=text,
             reply_markup=mk.single_button(mk.btnBackKickFromFamily)
+        )
+
+    elif call_data.startswith("billsPage") or call_data.startswith("ownbillsPage"):
+        if call_data.startswith("ownbillsPage"):
+            pagenum = int(call_data[12:])
+            bill_list = user.get_family().get_bills_30_days(user_id=user.get_user_id())
+            own = True
+        else:
+            pagenum = int(call_data[9:])
+            bill_list = user.get_family().get_bills_30_days()
+            own = False
+        bill_offset_start = 0 if pagenum == 1 else 30*(pagenum-1)
+        maxpages = ceil(len(bill_list) / 30)
+        bill_list = bill_list[bill_offset_start:bill_offset_start+30]
+
+        text = ""
+        for bill in bill_list:
+            text += f"{'{:.2f}'.format(bill.get_price())} руб. - \"{bill.get_message()}\"\nДобавлено {bill.get_user().get_name()} в {datetime.strftime(bill.get_date(), '%y-%m в %H:%M')}\n{tt.line_separator}\n"
+        text += f"{tt.family_bills_last_30_days if not own else tt.my_bills_last_30_days}: {'{:.2f}'.format(user.get_family().get_total_30_days(None if not own else user.get_user_id()))}руб."
+        
+        await bot.edit_message_text(
+            text=text,
+            chat_id=user.get_user_id(),
+            message_id=message_id,
+            reply_markup=mk.get_markup_billsPage(pagenum, maxpages=maxpages, own=own)
         )
 
 

@@ -26,6 +26,15 @@ def get_markup_start(user):
     return markup
 
 
+def get_markup_billsPage(pagenum, maxpages, own=False):
+    pagenum = int(pagenum)
+    maxpages = int(maxpages)
+    markup = types.InlineKeyboardMarkup()
+    # No idea how to call the variable
+    text = "own" if own else ""
+    markup.add(types.InlineKeyboardButton(text="⛔️", callback_data="None") if pagenum == 1 else types.InlineKeyboardButton(text="⬅️", callback_data=text + f"billsPage{pagenum - 1}"), types.InlineKeyboardButton(text=pagenum, callback_data="None"), types.InlineKeyboardButton(text="⛔️", callback_data="None") if pagenum >= maxpages else types.InlineKeyboardButton(text="➡️", callback_data=text + f"billsPage{pagenum + 1}"))
+    return markup
+
 def get_markup_myInvites(user):
     markup = types.InlineKeyboardMarkup()
     for invite in user.get_invites():

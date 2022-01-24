@@ -8,8 +8,8 @@ def user_exists(user_id):
     c.execute("SELECT * FROM users WHERE user_id=?", [user_id])
     return len(list(c)) == 1
 
-def create_user(user_id, username):
-    c.execute("INSERT INTO users VALUES (?, ?, ?)", [user_id, None, username])
+def create_user(user_id):
+    c.execute("INSERT INTO users VALUES (?, ?, ?)", [user_id, None, user_id])
     conn.commit()
 
 class User:
