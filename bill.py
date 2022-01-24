@@ -1,10 +1,12 @@
 import sqlite3
 from random import randint
-from datetime import datetime
+from datetime import datetime, timedelta
 import user as usr
 
 conn = sqlite3.connect("data.db")
 c = conn.cursor()
+
+SERVER_TIMEZONE_HOUR_DIFFERENCE = 3
 
 
 def bill_exists(bill_id):
@@ -17,7 +19,7 @@ def create_bill(family_id, user_id, price, message):
         bill_id = randint(100000, 999999)
         if not bill_exists(bill_id):
             break
-    c.execute("INSERT INTO bills VALUES (?, ?, ?, ?, ?, ?)", [bill_id, family_id, user_id, price, message, datetime.now().strftime("%Y-%m-%d %H:%M:%S")])
+    c.execute("INSERT INTO bills VALUES (?, ?, ?, ?, ?, ?)", [bill_id, family_id, user_id, price, message, (datetime.now() + timedelta(hours=SERVER_TIMEZONE_HOUR_DIFFERENCE)).strftime("%Y-%m-%d %H:%M:%S")])
     conn.commit()
     return Bill(bill_id)
 
