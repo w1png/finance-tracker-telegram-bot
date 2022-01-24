@@ -67,7 +67,7 @@ class Family:
     def get_bills_30_days(self, user_id=None):
         approved_bill_list = list()
         date_last_month = datetime.now() - timedelta(days=30)
-        for bill in self.get_bills(user_id)[::-1]:
+        for bill in self.get_bills(user_id):
             if bill.get_date() > date_last_month:
                 approved_bill_list.append(bill)
             else:
